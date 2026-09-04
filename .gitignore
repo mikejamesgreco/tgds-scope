@@ -50,3 +50,6 @@ secrets/
 *.tar.gz
 
 # Keep public sample CSV/JSON fixtures and repo artifacts in source control.
+
+# semgrep scan results
+scan-results

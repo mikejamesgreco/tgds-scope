@@ -155,7 +155,7 @@ body.display-paused #pauseBtn{
 </head>
 <body>
 <div class="app">
-<header><div class="brand" title="The Greco Data Scope"><h1>TGDS Data Scope <span id="headerVersion" style="color:#6f8497;font-weight:500"></span></h1><span class="tgds-expansion" title="The Greco Data Scope">The Greco Data Scope</span><a class="tgds-project-link" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open TGDS Data Scope documentation and source on GitHub">GitHub / Docs ↗</a><div class="sub">Local-first CSV monitoring and live visualization · zero third-party runtime dependencies</div></div></header>
+<header><div class="brand" title="The Greco Data Scope"><h1>TGDS Data Scope</h1><span class="tgds-expansion" title="The Greco Data Scope">The Greco Data Scope</span><a class="tgds-project-link" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open TGDS Data Scope documentation and source on GitHub">GitHub / Docs ↗</a><div class="sub">Local-first CSV monitoring and live visualization · zero third-party runtime dependencies</div></div></header>
 
 <section class="toolbar">
 <button id="openBtn" class="primary">Open CSV</button>
@@ -211,14 +211,14 @@ body.display-paused #pauseBtn{
 <section class="statusbar"><span><i id="dot" class="dot"></i><b id="state">Idle</b></span><span>Rows: <b id="rows">0</b></span><span>Columns: <b id="cols">0</b></span><span>Series: <b id="seriesCount">0</b></span><span>Last read: <b id="lastRead">—</b></span><span>Changed: <b id="changed">—</b></span><span>Read time: <b id="readMs">—</b></span><span>Context: <b id="contextMode">—</b></span></section>
 
 
-<footer title="TGDS Data Scope — The Greco Data Scope"><span>© <span id="copyrightYear"></span> <span class="footer-brand">mikejamesgreco.me LLC</span>. All rights reserved. <span id="footerVersion" class="footer-version"></span><span class="footer-sep">|</span><a class="footer-repo" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open the TGDS Data Scope repository and README on GitHub">GitHub / README ↗</a></span></footer>
+<footer title="TGDS Data Scope — The Greco Data Scope"><span>© <span id="copyrightYear"></span> <span class="footer-brand">mikejamesgreco.me LLC</span>. All rights reserved.<span class="footer-sep">|</span><a class="footer-repo" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open the TGDS Data Scope repository and README on GitHub">GitHub / README ↗</a></span></footer>
 </div>
 
 
 <div id="helpModal" class="help-modal" aria-hidden="true">
   <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <div class="help-head">
-      <h2 id="helpTitle">TGDS Data Scope Controls</h2>
+      <h2 id="helpTitle">TGDS Data Scope Controls <span id="helpVersion" style="color:#6f8497;font-size:12px;font-weight:600"></span></h2>
       <button id="helpCloseBtn" type="button">Close</button>
     </div>
     <div class="help-body">
@@ -251,7 +251,7 @@ body.display-paused #pauseBtn{
 <script>
 "use strict";
 
-const APP_VERSION="v0022";
+const APP_VERSION="v0023";
 
 const PALETTE=["#59f2aa","#55c7ff","#ffd166","#ff7aa2","#c59cff","#7ee787","#ff9f43","#70d6ff","#f78c6c","#b8f2e6","#e6c79c","#a0c4ff"];
 let fileHandle=null,fallbackFile=null,timer=null,monitoring=false;
@@ -1148,8 +1148,8 @@ document.addEventListener("keydown",e=>{
 });
 document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="o"){e.preventDefault();openFile()}});
 document.title=`TGDS Data Scope ${APP_VERSION} — The Greco Data Scope`;
-$("headerVersion").textContent=APP_VERSION;
-$("footerVersion").textContent=APP_VERSION;
+$("helpVersion").textContent=APP_VERSION;
+
 $("copyrightYear").textContent=String(new Date().getFullYear());
 fitCanvas();
 $("contextMode").textContent=(window.isSecureContext&&("showOpenFilePicker" in window))?"File handle / live monitoring capable":"Snapshot fallback only";
