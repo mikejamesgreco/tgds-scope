@@ -21,6 +21,17 @@
   white-space:nowrap;
   animation:tgdsSoftBlink 2.2s ease-in-out infinite;
 }
+.brand .tgds-project-link{
+  display:block;
+  margin-top:2px;
+  font-size:9px;
+  line-height:1.1;
+  font-weight:700;
+  color:#7890a2;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.brand .tgds-project-link:hover{color:#53f3a6;text-decoration:underline}
 @keyframes tgdsSoftBlink{
   0%,100%{opacity:.28}
   50%{opacity:.95}
@@ -42,6 +53,9 @@
 }
 .footer-brand{font-weight:600;color:#8798a6}
 .footer-version{margin-left:6px;color:#647586;font-weight:600}
+.footer-sep{margin:0 7px;color:#425363}
+.footer-repo{color:#8798a6;font-weight:600;text-decoration:none}
+.footer-repo:hover{color:#53f3a6;text-decoration:underline}
 .help-modal{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72)}
 .help-modal.open{display:flex}
 .help-card{width:min(860px,96vw);max-height:88vh;overflow:auto;background:#101820;border:1px solid #314354;border-radius:14px;box-shadow:0 28px 90px rgba(0,0,0,.6)}
@@ -141,7 +155,7 @@ body.display-paused #pauseBtn{
 </head>
 <body>
 <div class="app">
-<header><div class="brand" title="The Greco Data Scope"><h1>TGDS Data Scope <span id="headerVersion" style="color:#6f8497;font-weight:500"></span></h1><span class="tgds-expansion" title="The Greco Data Scope">The Greco Data Scope</span><div class="sub">Local-first CSV monitoring and live visualization · zero third-party runtime dependencies</div></div></header>
+<header><div class="brand" title="The Greco Data Scope"><h1>TGDS Data Scope <span id="headerVersion" style="color:#6f8497;font-weight:500"></span></h1><span class="tgds-expansion" title="The Greco Data Scope">The Greco Data Scope</span><a class="tgds-project-link" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open TGDS Data Scope documentation and source on GitHub">GitHub / Docs ↗</a><div class="sub">Local-first CSV monitoring and live visualization · zero third-party runtime dependencies</div></div></header>
 
 <section class="toolbar">
 <button id="openBtn" class="primary">Open CSV</button>
@@ -197,7 +211,7 @@ body.display-paused #pauseBtn{
 <section class="statusbar"><span><i id="dot" class="dot"></i><b id="state">Idle</b></span><span>Rows: <b id="rows">0</b></span><span>Columns: <b id="cols">0</b></span><span>Series: <b id="seriesCount">0</b></span><span>Last read: <b id="lastRead">—</b></span><span>Changed: <b id="changed">—</b></span><span>Read time: <b id="readMs">—</b></span><span>Context: <b id="contextMode">—</b></span></section>
 
 
-<footer title="TGDS Data Scope — The Greco Data Scope"><span>© <span id="copyrightYear"></span> <span class="footer-brand">mikejamesgreco.me LLC</span>. All rights reserved. <span id="footerVersion" class="footer-version"></span></span></footer>
+<footer title="TGDS Data Scope — The Greco Data Scope"><span>© <span id="copyrightYear"></span> <span class="footer-brand">mikejamesgreco.me LLC</span>. All rights reserved. <span id="footerVersion" class="footer-version"></span><span class="footer-sep">|</span><a class="footer-repo" href="https://github.com/mikejamesgreco/tgds-scope#readme" target="_blank" rel="noopener noreferrer" title="Open the TGDS Data Scope repository and README on GitHub">GitHub / README ↗</a></span></footer>
 </div>
 
 
@@ -237,7 +251,7 @@ body.display-paused #pauseBtn{
 <script>
 "use strict";
 
-const APP_VERSION="v0021";
+const APP_VERSION="v0022";
 
 const PALETTE=["#59f2aa","#55c7ff","#ffd166","#ff7aa2","#c59cff","#7ee787","#ff9f43","#70d6ff","#f78c6c","#b8f2e6","#e6c79c","#a0c4ff"];
 let fileHandle=null,fallbackFile=null,timer=null,monitoring=false;
