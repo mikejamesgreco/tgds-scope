@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TGDS Data Scope</title>
+<meta name="description" content="A single-file, local-first CSV monitor and live visualization tool.">
+<style>
+:root{--bg:#0a0e12;--panel:#111820;--line:#253240;--text:#dbe7f3;--muted:#7f94a8;--good:#53f3a6;--warn:#ffca57;--bad:#ff6b6b;--shadow:0 18px 55px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% 0%,#142230 0,#0a0e12 38%,#070a0d 100%);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{padding:18px}button,select,input{font:inherit}button,select,input[type=number]{border:1px solid var(--line);background:#131c25;color:var(--text);border-radius:8px;min-height:34px;padding:6px 10px}button{cursor:pointer}button:hover{border-color:#3e5367}button.primary{background:#153428;border-color:#256b4d;color:#dfffee}button.stop{background:#3b2022;border-color:#6d3336;color:#ffdede}button:disabled{opacity:.45;cursor:not-allowed}.app{max-width:1500px;margin:0 auto}header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.brand h1{font-size:21px;margin:0;letter-spacing:.02em}
+.brand .tgds-expansion{
+  display:block;
+  margin-top:3px;
+  font-size:8px;
+  line-height:1;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#7890a2;
+  opacity:.42;
+  white-space:nowrap;
+  animation:tgdsSoftBlink 2.2s ease-in-out infinite;
+}
+@keyframes tgdsSoftBlink{
+  0%,100%{opacity:.28}
+  50%{opacity:.95}
+}
+@media (prefers-reduced-motion:reduce){
+  .brand .tgds-expansion{animation:none;opacity:.72}
+}
+.brand .sub{color:var(--muted);font-size:13px;margin-top:6px}.toolbar,.settings,.series-box,.statusbar{background:rgba(17,24,32,.93);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;margin-bottom:10px}.file-name{min-width:220px;flex:1;color:#c9d7e4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}.settings{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px;padding:10px;margin-bottom:10px}.field label{display:block;color:var(--muted);font-size:11px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.06em}.field select,.field input{width:100%}.series-box{padding:10px;margin-bottom:10px}.series-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}.series-title b{font-size:12px}.series-title span{color:var(--muted);font-size:11px}.series-list{display:flex;gap:7px;flex-wrap:wrap}.series-chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;background:#101821;padding:5px 9px;cursor:pointer;user-select:none}.series-chip input{margin:0}.series-chip.disabled{opacity:.45}.monitor{position:relative;background:#030607;border:1px solid #1d342c;border-radius:14px;overflow:hidden;box-shadow:inset 0 0 50px rgba(26,255,145,.03),var(--shadow)}canvas{display:block;width:100%;height:620px;background:linear-gradient(rgba(70,255,170,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(70,255,170,.045) 1px,transparent 1px),#030607;background-size:28px 28px}.overlay{position:absolute;left:14px;top:12px;pointer-events:none;color:#83ffc0;font:12px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;text-shadow:0 0 9px rgba(83,243,166,.35)}.overlay .big{font-size:16px;font-weight:650}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#6f8b7e;pointer-events:none;padding:24px}.empty strong{display:block;color:#b7d9ca;font-size:17px;margin-bottom:4px}.statusbar{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;padding:9px 12px;font-size:12px;color:var(--muted)}.statusbar b{color:var(--text);font-weight:600}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#50616e;margin-right:6px}.dot.live{background:var(--good);animation:pulse 1.3s infinite}.dot.bad{background:var(--bad)}@keyframes pulse{50%{box-shadow:0 0 12px rgba(83,243,166,.8)}}details{margin-top:10px;background:rgba(17,24,32,.9);border:1px solid var(--line);border-radius:12px;padding:10px 12px}summary{cursor:pointer;font-weight:600}.help{color:#aebdca;max-width:1050px}.help code{color:#b9fbd8}.help p{margin:8px 0}footer{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  margin-top:10px;
+  padding:8px 12px 4px;
+  color:#647586;
+  font-size:10px;
+  letter-spacing:.02em;
+  text-align:center;
+}
+.footer-brand{font-weight:600;color:#8798a6}
+.footer-version{margin-left:6px;color:#647586;font-weight:600}
+.help-modal{position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.72)}
+.help-modal.open{display:flex}
+.help-card{width:min(860px,96vw);max-height:88vh;overflow:auto;background:#101820;border:1px solid #314354;border-radius:14px;box-shadow:0 28px 90px rgba(0,0,0,.6)}
+.help-head{position:sticky;top:0;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;background:#101820;border-bottom:1px solid #263544}
+.help-head h2{margin:0;font-size:18px}
+.help-body{padding:14px 16px 18px;color:#b8c6d2}
+.help-grid{display:grid;grid-template-columns:180px 1fr;gap:10px 16px}
+.help-grid dt{font-weight:700;color:#dce8f3}
+.help-grid dd{margin:0 0 8px}
+.help-tip{margin-top:12px;padding:10px 12px;border:1px solid #284938;background:#0d2118;border-radius:10px;color:#bdf2d1}
+@media(max-width:1100px){.settings{grid-template-columns:repeat(3,1fr)}canvas{height:540px}}@media(max-width:700px){body{padding:8px}.settings{grid-template-columns:repeat(2,1fr)}canvas{height:460px}header{align-items:center}}
+
+.stats-panel{
+  margin-top:12px;
+  border:1px solid #153527;
+  background:rgba(5,12,9,.72);
+  border-radius:10px;
+  overflow:hidden;
+}
+.stats-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:9px 11px;
+  border-bottom:1px solid #153527;
+  color:#9fd8bb;
+  font-size:12px;
+}
+.stats-title span{color:#678b78;font-size:10px}
+.stats-wrap{overflow:auto}
+.stats-table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:ui-monospace,Consolas,monospace;
+  font-size:11px;
+}
+.stats-table th,.stats-table td{
+  padding:6px 8px;
+  border-bottom:1px solid rgba(71,120,91,.18);
+  text-align:right;
+  white-space:nowrap;
+}
+.stats-table th:first-child,.stats-table td:first-child{text-align:left}
+.stats-table th{
+  color:#6fa184;
+  font-weight:700;
+  background:rgba(0,0,0,.16);
+  position:sticky;
+  top:0;
+}
+.stats-table td{color:#b7d7c4}
+.stats-empty{text-align:center!important;color:#607f6d!important;padding:10px!important}
+#scope.crosshair{cursor:crosshair}
+body.display-paused #pauseBtn{
+  border-color:#d8a83e;
+  color:#ffe29b;
+  box-shadow:0 0 0 1px rgba(216,168,62,.18) inset;
+}
+
+
+.fullscreen-stats{
+  display:none;
+}
+#monitorPanel:fullscreen{
+  display:grid;
+  grid-template-rows:minmax(0,1fr) auto;
+  background:#030607;
+  border:0;
+  border-radius:0;
+}
+#monitorPanel:fullscreen canvas{
+  width:100%;
+  height:100%;
+  min-height:0;
+}
+#monitorPanel:fullscreen .fullscreen-stats{
+  display:block;
+  max-height:28vh;
+  border-top:1px solid #244436;
+  background:rgba(5,12,9,.96);
+  overflow:hidden;
+}
+.fullscreen-stats-title{
+  padding:8px 12px;
+  color:#9fd8bb;
+  font-size:12px;
+  font-weight:700;
+  border-bottom:1px solid #153527;
+}
+.fullscreen-stats-wrap{
+  max-height:22vh;
+  overflow:auto;
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand" title="The Greco Data Scope"><h1>TGDS Data Scope <span id="headerVersion" style="color:#6f8497;font-weight:500"></span></h1><span class="tgds-expansion" title="The Greco Data Scope">The Greco Data Scope</span><div class="sub">Local-first CSV monitoring and live visualization · zero third-party runtime dependencies</div></div></header>
+
+<section class="toolbar">
+<button id="openBtn" class="primary">Open CSV</button>
+<button id="startBtn" disabled>Start Monitoring</button>
+<button id="stopBtn" class="stop" disabled>Stop</button>
+<button id="pauseBtn">Pause Display</button>
+<button id="readBtn" disabled>Read Now</button>
+<button id="popoutBtn">Pop Out Graph</button>
+      <button id="fullscreenBtn">Full Screen</button>
+<button id="helpBtn">Help</button>
+<div id="fileName" class="file-name">No file selected</div>
+</section>
+
+<section class="settings">
+<div class="field"><label>Visualization</label><select id="mode"><option value="line">Line Scope</option><option value="scatter">Scatter</option><option value="equalizer">Equalizer</option></select></div>
+<div class="field"><label>Leading Edge</label><select id="leadingEdge"><option value="right" selected>Right</option><option value="left">Left</option></select></div>
+<div class="field"><label>Refresh</label><select id="interval"><option value="250">250 ms</option><option value="500">500 ms</option><option value="1000" selected>1 second</option><option value="2000">2 seconds</option><option value="5000">5 seconds</option><option value="10000">10 seconds</option></select></div>
+<div class="field"><label>Display Points</label><input id="maxPoints" type="number" min="10" max="100000" value="120"></div>
+<div class="field"><label>Equalizer Slots</label><input id="bars" type="number" min="4" max="256" value="32"></div>
+</section>
+
+<section class="series-box">
+<div class="series-title"><b>Series to Monitor</b><span>Every numeric or date/time CSV column is an available live series · all detected series selected by default</span></div>
+<div id="seriesList" class="series-list"><span style="color:#7f94a8">Open a CSV to discover series.</span></div>
+<div class="stats-panel">
+  <div class="stats-title"><b>Live Statistics</b><span>Current · Min · Max · Avg · Δ · Rate/sec</span></div>
+  <div class="stats-wrap">
+    <table class="stats-table">
+      <thead>
+        <tr><th>Series</th><th>Current</th><th>Min</th><th>Max</th><th>Avg</th><th>Δ</th><th>Rate/sec</th></tr>
+      </thead>
+      <tbody id="statsBody"><tr><td colspan="7" class="stats-empty">No live samples yet.</td></tr></tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<section id="monitorPanel" class="monitor">
+<canvas id="scope" width="1400" height="620"></canvas>
+<div class="overlay"><div id="scopeTitle" class="big">WAITING FOR DATA</div><div id="scopeMeta">Open a CSV to begin monitoring</div></div>
+<div id="empty" class="empty"><div><strong>Open a CSV to monitor it</strong>Each numeric or date/time CSV column becomes a selectable live series. System time is always used for the X axis.</div></div>
+<div id="fullscreenStats" class="fullscreen-stats">
+  <div class="fullscreen-stats-title">Live Statistics</div>
+  <div class="fullscreen-stats-wrap">
+    <table class="stats-table">
+      <thead><tr><th>Series</th><th>Current</th><th>Min</th><th>Max</th><th>Avg</th><th>Δ</th><th>Rate/sec</th></tr></thead>
+      <tbody id="fullscreenStatsBody"></tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<section class="statusbar"><span><i id="dot" class="dot"></i><b id="state">Idle</b></span><span>Rows: <b id="rows">0</b></span><span>Columns: <b id="cols">0</b></span><span>Series: <b id="seriesCount">0</b></span><span>Last read: <b id="lastRead">—</b></span><span>Changed: <b id="changed">—</b></span><span>Read time: <b id="readMs">—</b></span><span>Context: <b id="contextMode">—</b></span></section>
+
+
+<footer title="TGDS Data Scope — The Greco Data Scope"><span>© <span id="copyrightYear"></span> <span class="footer-brand">mikejamesgreco.me LLC</span>. All rights reserved. <span id="footerVersion" class="footer-version"></span></span></footer>
+</div>
+
+
+<div id="helpModal" class="help-modal" aria-hidden="true">
+  <div class="help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-head">
+      <h2 id="helpTitle">TGDS Data Scope Controls</h2>
+      <button id="helpCloseBtn" type="button">Close</button>
+    </div>
+    <div class="help-body">
+      <dl class="help-grid">
+        <dt>Open CSV</dt><dd>Choose the CSV to monitor. Data Scope asks Chromium to start in Downloads when supported. With a persistent file handle, the same file can be reread as another process changes it.</dd>
+        <dt>Start Monitoring</dt><dd>Begins periodic rereading of the selected CSV using the Refresh interval.</dd>
+        <dt>Stop</dt><dd>Stops automatic rereading. The currently displayed data remains visible.</dd>
+        <dt>Read Now</dt><dd>Immediately rereads the selected file once without waiting for the next scheduled poll.</dd>
+        
+          <dt>Pause Display</dt><dd>Freezes the graph for inspection while TGDS continues polling and collecting samples. Resume returns to the current live view.</dd>
+          <dt>Live Statistics</dt><dd>Shows Current, Min, Max, Average, change from the prior sample, and rate per second for each selected series.</dd>
+          <dt>Crosshair</dt><dd>Move the pointer over Line Scope or Scatter to inspect the nearest sampled system time and the series values at that point.</dd>
+          <dt>Source Change Markers</dt><dd>Line Scope and Scatter show subtle vertical markers when TGDS detects that the underlying CSV file changed. Poll time continues even between source changes.</dd>
+          <dt>Full Screen</dt><dd>Expands the graph area using the browser Fullscreen API and includes the synchronized Live Statistics panel below the graph. Use the button again or Escape to return.</dd>
+<dt>Pop Out Graph</dt><dd>Opens the live graph in a separate window with its own synchronized Live Statistics panel. Opens a large graph-only window. Monitoring remains owned by the main page, so opening or closing the pop-out does not stop the feed.</dd>
+        <dt>Visualization</dt><dd><b>Line Scope</b> connects samples over time. <b>Scatter</b> shows each sample as a point. <b>Equalizer</b> shows recent time positions as groups of vertical bars.</dd>
+        <dt>Leading Edge</dt><dd>Choose where the newest live sample appears. <b>Right</b> puts both the newest data and the Y-value scale on the right edge; <b>Left</b> puts them on the left. X-axis ticks always show the current system clock time, with the newest time highlighted at the leading edge.</dd>
+        <dt>Refresh</dt><dd>How often Data Scope rereads the file while monitoring, from 250 ms through 10 seconds.</dd>
+        <dt>Display Points</dt><dd>Maximum number of recent samples shown in Line Scope and Scatter. Older samples age out of the visible window.</dd>
+        <dt>Equalizer Slots</dt><dd>How many recent time positions the Equalizer keeps visible at once.</dd>
+        <dt>Series to Monitor</dt><dd>Every numeric or recognizable date/time CSV column is discovered automatically as a live series, including a source column named <code>timestamp</code>. System time still supplies the X axis. Date/time series are converted to epoch seconds internally and marked <code>[time]</code> in the legend. Use the checkboxes to show or hide individual series.</dd>
+      </dl>
+      <div class="help-tip"><b>Recommended live test:</b> run <code>tgds-live-feed.bat</code> and open the generated <code>tgds-live-data.csv</code>. TGDS samples the latest row on each poll and plots it against system time.</div>
+    </div>
+  </div>
+</div>
+
+<input id="fallbackInput" type="file" accept=".csv,text/csv" hidden>
+
+<script>
+"use strict";
+
+const APP_VERSION="v0021";
+
+const PALETTE=["#59f2aa","#55c7ff","#ffd166","#ff7aa2","#c59cff","#7ee787","#ff9f43","#70d6ff","#f78c6c","#b8f2e6","#e6c79c","#a0c4ff"];
+let fileHandle=null,fallbackFile=null,timer=null,monitoring=false;
+let headers=[],dataRows=[],lastStamp=null,lastSize=null,changedCount=0,pollSamples=[],pollStart=performance.now();
+let selectedSeries=new Set(),seriesTypes=new Map(),peakHold=[];
+let graphPopup=null,popupCanvas=null,popupCtx=null;
+let displayPaused=false,pausedFrame=null;
+let hoverPoint=null;
+let sourceChangeTimes=[];
+
+const $=id=>document.getElementById(id),canvas=$("scope"),ctx=canvas.getContext("2d");
+
+function setState(text,kind=""){$("state").textContent=text;$("dot").className="dot"+(kind?" "+kind:"")}
+function nowText(){return new Date().toLocaleTimeString()}
+function fitCanvas(){const r=canvas.getBoundingClientRect(),dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1)),w=Math.max(300,Math.round(r.width*dpr)),h=Math.max(260,Math.round(r.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;render()}}
+window.addEventListener("resize",fitCanvas);
+
+function parseCSV(text){
+  const rows=[];let row=[],field="",q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){if(text[i+1]==='"'){field+='"';i++}else q=false}else field+=c;
+    }else{
+      if(c==='"')q=true;
+      else if(c===','){row.push(field);field=""}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field=""}
+      else if(c!=='\r')field+=c;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row)}
+  return rows;
+}
+
+function numericScore(i){
+  if(i<0)return 0;
+  const sample=dataRows.slice(0,Math.min(100,dataRows.length));
+  let ok=0,seen=0;
+  for(const r of sample){
+    const v=String(r[i]??"").trim();
+    if(v==="")continue;
+    seen++;
+    if(Number.isFinite(Number(v)))ok++;
+  }
+  return seen?ok/seen:0;
+}
+
+function dateScore(i){
+  if(i<0)return 0;
+  const sample=dataRows.slice(0,Math.min(100,dataRows.length));
+  let ok=0,seen=0;
+  for(const r of sample){
+    const v=String(r[i]??"").trim();
+    if(v==="")continue;
+    seen++;
+    if(Number.isFinite(Number(v)))continue;
+    if(Number.isFinite(Date.parse(v)))ok++;
+  }
+  return seen?ok/seen:0;
+}
+
+function detectSeriesType(i){
+  if(numericScore(i)>=.65)return"number";
+  if(dateScore(i)>=.65)return"datetime";
+  return null;
+}
+
+function seriesValue(i,raw){
+  const v=String(raw??"").trim();
+  if(v==="")return null;
+  const type=seriesTypes.get(i);
+  if(type==="number"){
+    const n=Number(v);
+    return Number.isFinite(n)?n:null;
+  }
+  if(type==="datetime"){
+    const ms=Date.parse(v);
+    return Number.isFinite(ms)?ms/1000:null;
+  }
+  return null;
+}
+
+
+function parseSeriesHeader(raw){
+  const s=String(raw||"").trim();
+  let m=s.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
+  if(!m)m=s.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  if(m)return{name:m[1].trim()||s,unit:m[2].trim()};
+  return{name:s,unit:""};
+}
+function seriesDisplayName(i){
+  const p=parseSeriesHeader(headers[i]);
+  const base=p.unit?`${p.name} [${p.unit}]`:p.name;
+  return seriesTypes.get(i)==="datetime"?`${base} [time]`:base;
+}
+function selectedCommonUnit(series){
+  if(series.some(i=>seriesTypes.get(i)==="datetime"))return"";
+  const units=series.map(i=>parseSeriesHeader(headers[i]).unit).filter(Boolean);
+  if(!units.length)return"";
+  const first=units[0];
+  return units.length===series.length && units.every(u=>u===first)?first:"";
+}
+function formatTick(v,span){
+  if(!Number.isFinite(v))return"";
+  const a=Math.abs(v),s=Math.abs(span||0);
+  if(a>=1000000|| (a>0&&a<0.001))return v.toExponential(2);
+  if(s>=1000)return v.toFixed(0);
+  if(s>=100)return v.toFixed(1);
+  if(s>=10)return v.toFixed(1);
+  if(s>=1)return v.toFixed(2);
+  return v.toFixed(3);
+}
+
+function fmtStat(v){
+  if(!Number.isFinite(v))return"—";
+  const a=Math.abs(v);
+  if(a>=1000000 || (a>0 && a<0.001))return v.toExponential(2);
+  if(a>=1000)return v.toFixed(1);
+  if(a>=100)return v.toFixed(2);
+  return v.toFixed(3).replace(/\.?0+$/,"");
+}
+
+function computeSeriesStats(seriesIndex){
+  const samples=pollSamples.filter(s=>Number.isFinite(s.values[seriesIndex]));
+  if(!samples.length)return null;
+  const vals=samples.map(s=>s.values[seriesIndex]);
+  const current=vals[vals.length-1];
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const prev=vals.length>1?vals[vals.length-2]:null;
+  const delta=prev===null?null:current-prev;
+  let rate=null;
+  if(samples.length>1){
+    const a=samples[samples.length-2],b=samples[samples.length-1];
+    const dt=(b.wallTime-a.wallTime)/1000;
+    if(dt>0 && Number.isFinite(delta))rate=delta/dt;
+  }
+  return{current,min,max,avg,delta,rate};
+}
+
+function updateStats(){
+  const body=$("statsBody");
+  if(!body)return;
+  const series=getSelectedSeries();
+  body.innerHTML="";
+  if(!series.length || !pollSamples.length){
+    body.innerHTML='<tr><td colspan="7" class="stats-empty">No live samples yet.</td></tr>';
+  }else{
+    for(const i of series){
+      const s=computeSeriesStats(i);
+      if(!s)continue;
+      const tr=document.createElement("tr");
+      const name=document.createElement("td");
+      name.textContent=seriesDisplayName(i);
+      tr.appendChild(name);
+      for(const v of [s.current,s.min,s.max,s.avg,s.delta,s.rate]){
+        const td=document.createElement("td");
+        td.textContent=fmtStat(v);
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+    if(!body.children.length){
+      body.innerHTML='<tr><td colspan="7" class="stats-empty">No numeric live samples yet.</td></tr>';
+    }
+  }
+
+  const fsBody=$("fullscreenStatsBody");
+  if(fsBody)fsBody.innerHTML=body.innerHTML;
+
+  if(graphPopup && !graphPopup.closed){
+    const popupBody=graphPopup.document.getElementById("popupStatsBody");
+    if(popupBody)popupBody.innerHTML=body.innerHTML;
+  }
+}
+
+function snapshotCanvas(){
+  try{
+    const c=document.createElement("canvas");
+    c.width=canvas.width;c.height=canvas.height;
+    c.getContext("2d").drawImage(canvas,0,0);
+    pausedFrame=c;
+  }catch(e){pausedFrame=null}
+}
+
+function setDisplayPaused(paused){
+  displayPaused=!!paused;
+  document.body.classList.toggle("display-paused",displayPaused);
+  $("pauseBtn").textContent=displayPaused?"Resume Display":"Pause Display";
+  if(displayPaused){
+    snapshotCanvas();
+  }else{
+    pausedFrame=null;
+    render();
+  }
+}
+
+function drawPausedFrame(){
+  if(!pausedFrame)return false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(pausedFrame,0,0,canvas.width,canvas.height);
+  drawText("DISPLAY PAUSED",18,26,"#ffe29b",Math.max(12,canvas.height/52),"700");
+  mirrorToPopup();
+  return true;
+}
+
+function toggleFullscreen(){
+  const target=$("monitorPanel")||canvas.parentElement;
+  if(!document.fullscreenElement){
+    if(target.requestFullscreen)target.requestFullscreen().catch(()=>{});
+  }else{
+    if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  }
+}
+
+function recordSourceChange(){
+  sourceChangeTimes.push(Date.now());
+  const cutoff=Date.now()-24*60*60*1000;
+  sourceChangeTimes=sourceChangeTimes.filter(t=>t>=cutoff);
+}
+
+function drawSourceChangeMarkers(a,xMin,xMax){
+  if(!sourceChangeTimes.length)return;
+  const X=v=>a.lead==="left"
+    ? a.plotRight-(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft)
+    : a.plotLeft+(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft);
+  ctx.save();
+  ctx.setLineDash([3,4]);
+  ctx.strokeStyle="rgba(255,214,102,.45)";
+  ctx.lineWidth=1;
+  for(const t of sourceChangeTimes){
+    if(t<xMin||t>xMax)continue;
+    const x=X(t);
+    ctx.beginPath();
+    ctx.moveTo(x,a.plotTop);
+    ctx.lineTo(x,a.plotBottom);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function nearestSampleIndex(xValue){
+  if(!pollSamples.length)return-1;
+  let best=-1,dist=Infinity;
+  for(let i=0;i<pollSamples.length;i++){
+    const d=Math.abs(pollSamples[i].wallTime-xValue);
+    if(d<dist){dist=d;best=i}
+  }
+  return best;
+}
+
+function drawCrosshair(a,xMin,xMax,yMin,yMax){
+  if(!hoverPoint || !a)return;
+  const rect=canvas.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const px=hoverPoint.x*(canvas.width/rect.width);
+  const py=hoverPoint.y*(canvas.height/rect.height);
+  if(px<a.plotLeft||px>a.plotRight||py<a.plotTop||py>a.plotBottom)return;
+
+  ctx.save();
+  ctx.strokeStyle="rgba(190,255,220,.48)";
+  ctx.lineWidth=1;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(px,a.plotTop);ctx.lineTo(px,a.plotBottom);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(a.plotLeft,py);ctx.lineTo(a.plotRight,py);ctx.stroke();
+  ctx.setLineDash([]);
+
+  const frac=a.lead==="left"
+    ? (a.plotRight-px)/(a.plotRight-a.plotLeft||1)
+    : (px-a.plotLeft)/(a.plotRight-a.plotLeft||1);
+  const xVal=xMin+(xMax-xMin)*frac;
+  const idx=nearestSampleIndex(xVal);
+
+  if(idx>=0){
+    const sample=pollSamples[idx];
+    const series=getSelectedSeries();
+    const lines=[formatTimeTick(sample.wallTime)];
+    for(const i of series.slice(0,8)){
+      lines.push(`${seriesDisplayName(i)}: ${fmtStat(sample.values[i])}`);
+    }
+    const font=Math.max(10,canvas.height/64);
+    ctx.font=`${font}px ui-monospace,Consolas,monospace`;
+    const pad=7,lineH=font+4;
+    const w=Math.max(...lines.map(s=>ctx.measureText(s).width))+pad*2;
+    const h=lines.length*lineH+pad*2;
+    let bx=px+10,by=py+10;
+    if(bx+w>canvas.width-6)bx=px-w-10;
+    if(by+h>canvas.height-6)by=py-h-10;
+    ctx.fillStyle="rgba(3,8,6,.92)";
+    ctx.strokeStyle="rgba(126,203,160,.55)";
+    ctx.lineWidth=1;
+    ctx.fillRect(bx,by,w,h);ctx.strokeRect(bx,by,w,h);
+    ctx.fillStyle="#c9f5d9";
+    lines.forEach((s,n)=>ctx.fillText(s,bx+pad,by+pad+font+n*lineH));
+  }
+  ctx.restore();
+}
+
+function formatTimeTick(ms){
+  if(!Number.isFinite(ms))return"";
+  return new Date(ms).toLocaleTimeString([],{
+    hour:"numeric",
+    minute:"2-digit",
+    second:"2-digit"
+  });
+}
+
+function getSelectedSeries(){return [...selectedSeries].filter(i=>i>=0&&i<headers.length).sort((a,b)=>a-b)}
+
+function refreshSchemaControls(){
+  const priorNames=new Set(getSelectedSeries().map(i=>headers[i]));
+
+  const numericIndices=[];
+  seriesTypes=new Map();
+  for(let i=0;i<headers.length;i++){
+    const type=detectSeriesType(i);
+    if(type){
+      numericIndices.push(i);
+      seriesTypes.set(i,type);
+    }
+  }
+
+  const nextSelected=new Set();
+  if(priorNames.size){
+    for(const i of numericIndices)if(priorNames.has(headers[i]))nextSelected.add(i);
+  }
+  if(!nextSelected.size)for(const i of numericIndices)nextSelected.add(i);
+  selectedSeries=nextSelected;
+
+  const list=$("seriesList");list.innerHTML="";
+  if(!numericIndices.length){
+    list.innerHTML='<span style="color:#7f94a8">No numeric or date/time series detected.</span>';
+  }else{
+    numericIndices.forEach((i,n)=>{
+      const label=document.createElement("label");label.className="series-chip";
+      const cb=document.createElement("input");cb.type="checkbox";cb.checked=selectedSeries.has(i);cb.dataset.index=String(i);
+      cb.addEventListener("change",()=>{
+        if(cb.checked)selectedSeries.add(i);else selectedSeries.delete(i);
+        $("seriesCount").textContent=String(selectedSeries.size);
+        render();
+      });
+      const sw=document.createElement("span");sw.style.cssText=`display:inline-block;width:9px;height:9px;border-radius:50%;background:${PALETTE[n%PALETTE.length]}`;
+      const txt=document.createElement("span");txt.textContent=seriesDisplayName(i);
+      label.append(cb,sw,txt);list.appendChild(label);
+    });
+  }
+  $("seriesCount").textContent=String(selectedSeries.size);
+}
+
+function loadText(text){
+  const parsed=parseCSV(text);
+  headers=(parsed.shift()||[]).map((h,i)=>String(h||`Column_${i+1}`).trim());
+  dataRows=parsed.filter(r=>r.some(v=>String(v??"").trim()!==""));
+  refreshSchemaControls();
+  $("rows").textContent=dataRows.length.toLocaleString();
+  $("cols").textContent=headers.length.toLocaleString();
+  $("empty").style.display=dataRows.length?"none":"grid";
+  render();
+}
+
+async function openFile(){
+  if(!window.isSecureContext || !("showOpenFilePicker" in window)){
+    console.warn("File System Access picker unavailable in this context; using standard file picker.");
+    $("fallbackInput").value="";
+    $("fallbackInput").click();
+    return;
+  }
+  try{
+    const [h]=await window.showOpenFilePicker({
+      multiple:false,
+      startIn:"downloads",
+      types:[{description:"CSV files",accept:{"text/csv":[".csv"]}}]
+    });
+    fileHandle=h;fallbackFile=null;resetPollHistory();
+    $("fileName").textContent=h.name;
+    $("startBtn").disabled=false;$("readBtn").disabled=false;
+    await readFile(true);
+    startMonitoring();
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    console.error("Persistent picker failed; using standard picker.",e);
+    setState("Choose CSV using fallback picker","warn");
+    $("fallbackInput").value="";
+    $("fallbackInput").click();
+  }
+}
+
+$("fallbackInput").addEventListener("change",async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  fileHandle=null;fallbackFile=f;resetPollHistory();
+  $("fileName").textContent=f.name+" (snapshot)";
+  $("readBtn").disabled=false;$("startBtn").disabled=true;$("stopBtn").disabled=true;
+  await readFile(true);
+  setState("Loaded snapshot · persistent handle unavailable","warn");
+});
+
+function resetPollHistory(){pollSamples=[];pollStart=performance.now();peakHold=[]}
+
+function sampleCurrentValues(){
+  if(!dataRows.length)return;
+  const row=dataRows[dataRows.length-1];
+  const values=row.map((v,i)=>seriesValue(i,v));
+  const max=Math.max(10,+$("maxPoints").value||120);
+  pollSamples.push({wallTime:Date.now(),values});
+  if(pollSamples.length>max)pollSamples.splice(0,pollSamples.length-max);
+}
+
+async function readFile(force=false){
+  const t0=performance.now();
+  try{
+    let f;if(fileHandle)f=await fileHandle.getFile();else if(fallbackFile)f=fallbackFile;else return;
+    const stamp=f.lastModified,size=f.size;
+    const changed=force||stamp!==lastStamp||size!==lastSize;
+    $("lastRead").textContent=nowText();
+    if(changed){
+      const text=await f.text();loadText(text);
+      lastStamp=stamp;lastSize=size;changedCount++;
+      recordSourceChange();
+      $("changed").textContent=changedCount.toLocaleString();
+    }
+    sampleCurrentValues();
+    render();
+    $("readMs").textContent=(performance.now()-t0).toFixed(1)+" ms";
+    if(monitoring)setState(changed?"Monitoring · file updated":"Monitoring · holding values","live");
+    else setState(changed?"Updated":"Ready","");
+  }catch(e){
+    console.error(e);setState("Read failed","bad");stopMonitoring(false);
+  }
+}
+
+function startMonitoring(){
+  if(!fileHandle)return;
+  stopMonitoring(false);monitoring=true;
+  $("startBtn").disabled=true;$("stopBtn").disabled=false;setState("Monitoring","live");
+  timer=setInterval(()=>readFile(false),+$("interval").value);
+}
+function stopMonitoring(update=true){
+  if(timer){clearInterval(timer);timer=null}
+  monitoring=false;$("startBtn").disabled=!fileHandle;$("stopBtn").disabled=true;
+  if(update)setState(fileHandle||fallbackFile?"Ready":"Idle","");
+}
+function restartIfMonitoring(){if(monitoring)startMonitoring()}
+$("interval").addEventListener("change",restartIfMonitoring);
+
+
+function niceRange(vals){
+  const nums=vals.filter(Number.isFinite);if(!nums.length)return[0,1];
+  let min=Math.min(...nums),max=Math.max(...nums);
+  if(min===max){const d=Math.abs(min||1)*.1||1;min-=d;max+=d}
+  const pad=(max-min)*.08;return[min-pad,max+pad];
+}
+function drawText(text,x,y,align="left",alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle="#8cae9f";ctx.font=`${Math.max(11,canvas.height/55)}px ui-monospace,Consolas,monospace`;ctx.textAlign=align;ctx.fillText(text,x,y);ctx.restore()}
+function drawAxes(pad,xLabel,yLabel,xMin,xMax,yMin,yMax,timeAxis=false){
+  const lead=$("leadingEdge").value;
+  const top=42,bottom=pad;
+  const plotLeft=lead==="left"?pad:18;
+  const plotRight=lead==="right"?canvas.width-pad:canvas.width-18;
+  const plotTop=top,plotBottom=canvas.height-bottom;
+  const xSpan=xMax-xMin,ySpan=yMax-yMin;
+  ctx.save();
+  ctx.lineWidth=1;
+
+  const ticks=6;
+  for(let i=0;i<=ticks;i++){
+    const frac=i/ticks;
+    const tx=plotLeft+(plotRight-plotLeft)*frac;
+    const xv=lead==="left"
+      ? xMax-xSpan*frac
+      : xMin+xSpan*frac;
+
+    ctx.strokeStyle="rgba(99,255,180,.10)";
+    ctx.beginPath();ctx.moveTo(tx,plotTop);ctx.lineTo(tx,plotBottom);ctx.stroke();
+
+    ctx.strokeStyle="rgba(99,255,180,.28)";
+    ctx.beginPath();ctx.moveTo(tx,plotBottom);ctx.lineTo(tx,plotBottom+5);ctx.stroke();
+
+    const leading=(lead==="right"&&i===ticks)||(lead==="left"&&i===0);
+    ctx.font=leading
+      ? `700 ${Math.max(12,canvas.height/56)}px ui-monospace,Consolas,monospace`
+      : `${Math.max(10,canvas.height/62)}px ui-monospace,Consolas,monospace`;
+    ctx.fillStyle=leading?"#b9ffd7":"#789689";
+    ctx.textAlign=leading?(lead==="right"?"right":"left"):"center";
+    const labelX=leading?(lead==="right"?plotRight-2:plotLeft+2):tx;
+    ctx.fillText(timeAxis?formatTimeTick(xv):formatTick(xv,xSpan),labelX,plotBottom+18);
+
+    if(leading){
+      ctx.strokeStyle="rgba(185,255,215,.52)";
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(tx,plotTop);ctx.lineTo(tx,plotBottom);ctx.stroke();
+    }
+  }
+
+  ctx.font=`${Math.max(10,canvas.height/62)}px ui-monospace,Consolas,monospace`;
+  for(let i=0;i<=ticks;i++){
+    const ty=plotBottom-(plotBottom-plotTop)*(i/ticks);
+    const yv=yMin+ySpan*(i/ticks);
+
+    ctx.strokeStyle="rgba(99,255,180,.10)";
+    ctx.beginPath();ctx.moveTo(plotLeft,ty);ctx.lineTo(plotRight,ty);ctx.stroke();
+
+    const axisX=lead==="right"?plotRight:plotLeft;
+    const tickOut=lead==="right"?5:-5;
+    ctx.strokeStyle="rgba(99,255,180,.28)";
+    ctx.beginPath();ctx.moveTo(axisX,ty);ctx.lineTo(axisX+tickOut,ty);ctx.stroke();
+
+    ctx.fillStyle="#789689";
+    ctx.textAlign=lead==="right"?"left":"right";
+    const labelX=lead==="right"?plotRight+9:plotLeft-9;
+    ctx.fillText(formatTick(yv,ySpan),labelX,ty+4);
+  }
+
+  ctx.strokeStyle="rgba(99,255,180,.28)";
+  ctx.lineWidth=1;
+  const axisX=lead==="right"?plotRight:plotLeft;
+  ctx.beginPath();
+  ctx.moveTo(axisX,plotTop);
+  ctx.lineTo(axisX,plotBottom);
+  ctx.lineTo(lead==="right"?plotLeft:plotRight,plotBottom);
+  ctx.stroke();
+
+  const leadText=lead==="right"?"newest →":"← newest";
+  drawText(`${xLabel} · ${leadText}`,(plotLeft+plotRight)/2,canvas.height-5,"center",.9);
+
+  ctx.save();
+  const yLabelX=lead==="right"?canvas.width-14:15;
+  ctx.translate(yLabelX,(plotTop+plotBottom)/2);
+  ctx.rotate(lead==="right"?Math.PI/2:-Math.PI/2);
+  drawText(yLabel,0,0,"center",.9);
+  ctx.restore();
+
+  ctx.restore();
+  return{plotLeft,plotRight,plotTop,plotBottom,lead};
+}
+
+function drawLegend(series){
+  if(!series.length)return;
+  ctx.save();
+  const fs=Math.max(11,canvas.height/58);
+  ctx.font=`${fs}px ui-monospace,Consolas,monospace`;
+  const lineH=20,padX=10,padY=8;
+  const labels=series.map(i=>seriesDisplayName(i));
+  const boxW=Math.max(...labels.map(s=>ctx.measureText(s).width))+42;
+  const boxH=labels.length*lineH+padY*2;
+  const x=($("leadingEdge").value==="right"?canvas.width-Math.max(62,canvas.width*.052)-boxW-10:canvas.width-boxW-18),y=12;
+  ctx.fillStyle="rgba(3,6,7,.72)";
+  ctx.strokeStyle="rgba(99,255,180,.18)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(x,y,boxW,boxH,7);else ctx.rect(x,y,boxW,boxH);
+  ctx.fill();ctx.stroke();
+  labels.forEach((label,n)=>{
+    const yy=y+padY+n*lineH+13;
+    ctx.strokeStyle=PALETTE[n%PALETTE.length];ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(x+10,yy-4);ctx.lineTo(x+24,yy-4);ctx.stroke();
+    ctx.fillStyle="#c1d0dc";ctx.textAlign="left";ctx.fillText(label,x+31,yy);
+  });
+  ctx.restore();
+}
+
+function getPlotData(){
+  const series=getSelectedSeries(),max=Math.max(10,+$("maxPoints").value||120);
+  const samples=pollSamples.slice(-max);
+  return{
+    series,
+    x:samples.map(s=>s.wallTime),
+    ys:series.map(i=>samples.map(s=>s.values[i])),
+    xLabel:"System time",
+    timeAxis:true,
+    count:samples.length
+  };
+}
+
+function renderLine(){
+  const p=getPlotData();if(!p.series.length||!p.count)return;
+  const xv=p.x.filter(Number.isFinite),yv=p.ys.flat().filter(Number.isFinite),[xMin,xMax]=niceRange(xv),[yMin,yMax]=niceRange(yv),pad=Math.max(62,canvas.width*.052);
+  const unit=selectedCommonUnit(p.series),yLabel=unit?`Value (${unit})`:"Value";
+  const a=drawAxes(pad,p.xLabel,yLabel,xMin,xMax,yMin,yMax,p.timeAxis===true);
+  const X=v=>a.lead==="left"?a.plotRight-(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft):a.plotLeft+(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft),Y=v=>a.plotTop+(yMax-v)/(yMax-yMin||1)*(a.plotBottom-a.plotTop);
+  p.ys.forEach((vals,n)=>{
+    ctx.save();ctx.strokeStyle=PALETTE[n%PALETTE.length];ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=7;ctx.lineWidth=Math.max(1.5,canvas.width/900);ctx.beginPath();let started=false;
+    vals.forEach((v,i)=>{const x=p.x[i];if(!Number.isFinite(x)||!Number.isFinite(v)){started=false;return}if(!started){ctx.moveTo(X(x),Y(v));started=true}else ctx.lineTo(X(x),Y(v))});
+    ctx.stroke();ctx.restore();
+  });
+  drawLegend(p.series);
+  drawSourceChangeMarkers(a,xMin,xMax);
+  drawCrosshair(a,xMin,xMax,yMin,yMax);
+  $("scopeTitle").textContent="LIVE POLL SCOPE";
+  $("scopeMeta").textContent=`${p.series.length} series · ${p.count} samples · unchanged file holds latest values`;
+}
+function renderScatter(){
+  const p=getPlotData();if(!p.series.length||!p.count)return;
+  const allY=p.ys.flat().filter(Number.isFinite),[xMin,xMax]=niceRange(p.x.filter(Number.isFinite)),[yMin,yMax]=niceRange(allY),pad=Math.max(62,canvas.width*.052);
+  const unit=selectedCommonUnit(p.series),yLabel=unit?`Value (${unit})`:"Value";
+  const a=drawAxes(pad,p.xLabel,yLabel,xMin,xMax,yMin,yMax,p.timeAxis===true);
+  const X=v=>a.lead==="left"?a.plotRight-(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft):a.plotLeft+(v-xMin)/(xMax-xMin||1)*(a.plotRight-a.plotLeft),Y=v=>a.plotTop+(yMax-v)/(yMax-yMin||1)*(a.plotBottom-a.plotTop);
+  p.ys.forEach((vals,n)=>{
+    ctx.save();ctx.fillStyle=PALETTE[n%PALETTE.length];ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=7;
+    vals.forEach((v,i)=>{const x=p.x[i];if(!Number.isFinite(x)||!Number.isFinite(v))return;ctx.beginPath();ctx.arc(X(x),Y(v),Math.max(2,canvas.width/700),0,Math.PI*2);ctx.fill()});
+    ctx.restore();
+  });
+  drawLegend(p.series);
+  drawSourceChangeMarkers(a,xMin,xMax);
+  drawCrosshair(a,xMin,xMax,yMin,yMax);
+  $("scopeTitle").textContent="LIVE POLL SCATTER";
+  $("scopeMeta").textContent=`${p.series.length} series · ${p.count} time positions · advances every poll`;
+}
+function renderEqualizer(){
+  const series=getSelectedSeries();if(!series.length)return;
+  const n=Math.max(4,Math.min(256,+$("bars").value||32));
+  let slots=[],slotTimes=[];
+
+  const samples=pollSamples.slice(-n);
+  slots=samples.map(s=>series.map(i=>Number.isFinite(s.values[i])?s.values[i]:0));
+  slotTimes=samples.map(s=>s.wallTime);
+
+  while(slots.length<n){
+    slots.unshift(series.map(()=>0));
+    slotTimes.unshift(null);
+  }
+
+  const lead=$("leadingEdge").value;
+  if(lead==="left"){
+    slots=[...slots].reverse();
+    slotTimes=[...slotTimes].reverse();
+  }
+
+  const all=slots.flat(),maxAbs=Math.max(1,...all.map(v=>Math.abs(v)));
+  const yRail=58,outer=18,top=52,bottom=64;
+  const plotLeft=lead==="left"?yRail:outer;
+  const plotRight=lead==="right"?canvas.width-yRail:canvas.width-outer;
+  const usableW=plotRight-plotLeft;
+  const base=canvas.height-bottom;
+  const usableH=base-top;
+  const gap=Math.max(2,usableW/n*.10),groupW=(usableW-gap*(n-1))/n;
+
+  if(peakHold.length!==n)peakHold=Array(n).fill(0);
+
+  ctx.save();
+
+  // Horizontal value grid and Y scale on the selected leading edge.
+  ctx.font=`${Math.max(10,canvas.height/62)}px ui-monospace,Consolas,monospace`;
+  for(let i=0;i<=5;i++){
+    const ratio=i/5;
+    const y=base-usableH*ratio;
+    const value=maxAbs*ratio;
+    ctx.strokeStyle="rgba(99,255,180,.10)";
+    ctx.beginPath();ctx.moveTo(plotLeft,y);ctx.lineTo(plotRight,y);ctx.stroke();
+
+    const axisX=lead==="right"?plotRight:plotLeft;
+    const tickOut=lead==="right"?5:-5;
+    ctx.strokeStyle="rgba(99,255,180,.28)";
+    ctx.beginPath();ctx.moveTo(axisX,y);ctx.lineTo(axisX+tickOut,y);ctx.stroke();
+
+    ctx.fillStyle="#789689";
+    ctx.textAlign=lead==="right"?"left":"right";
+    ctx.fillText(formatTick(value,maxAbs),lead==="right"?plotRight+9:plotLeft-9,y+4);
+  }
+
+  // Equalizer bars.
+  slots.forEach((slot,i)=>{
+    const x=plotLeft+i*(groupW+gap);
+    const innerGap=Math.max(.5,groupW*.04);
+    const bw=Math.max(.5,(groupW-innerGap*(series.length-1))/series.length);
+    let peak=0;
+    slot.forEach((val,s)=>{
+      const ratio=Math.min(1,Math.abs(val)/maxAbs),h=ratio*usableH,bx=x+s*(bw+innerGap);
+      ctx.fillStyle=PALETTE[s%PALETTE.length];
+      ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=5;
+      ctx.fillRect(bx,base-h,bw,h);
+      peak=Math.max(peak,ratio);
+    });
+    peakHold[i]=Math.max(peak,peakHold[i]*.94);
+    ctx.shadowBlur=0;
+    ctx.fillStyle="#eafff3";
+    ctx.fillRect(x,base-peakHold[i]*usableH,groupW,2);
+  });
+
+  // Restore the bottom X-axis rail and show a small set of readable time ticks.
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(99,255,180,.34)";
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(plotLeft,base);ctx.lineTo(plotRight,base);ctx.stroke();
+
+  const tickCount=Math.min(5,n-1);
+  for(let t=0;t<=tickCount;t++){
+    const idx=Math.round((n-1)*(t/tickCount));
+    const x=plotLeft+idx*(groupW+gap)+groupW/2;
+    ctx.strokeStyle="rgba(99,255,180,.28)";
+    ctx.beginPath();ctx.moveTo(x,base);ctx.lineTo(x,base+5);ctx.stroke();
+
+    const raw=slotTimes[idx];
+    if(raw!=null && Number.isFinite(Number(raw))){
+      const leading=(lead==="right"&&idx===n-1)||(lead==="left"&&idx===0);
+      ctx.fillStyle=leading?"#b9ffd7":"#789689";
+      ctx.font=leading
+        ? `700 ${Math.max(11,canvas.height/58)}px ui-monospace,Consolas,monospace`
+        : `${Math.max(10,canvas.height/62)}px ui-monospace,Consolas,monospace`;
+      ctx.textAlign=leading?(lead==="right"?"right":"left"):"center";
+      const label=formatTimeTick(Number(raw));
+      const lx=leading?(lead==="right"?plotRight-2:plotLeft+2):x;
+      ctx.fillText(label,lx,base+19);
+    }
+  }
+
+  // Stronger leading-edge line.
+  const leadingX=lead==="right"?plotRight:plotLeft;
+  ctx.strokeStyle="rgba(185,255,215,.52)";
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(leadingX,top);ctx.lineTo(leadingX,base);ctx.stroke();
+
+  ctx.restore();
+
+  const unit=selectedCommonUnit(series);
+  const yLabel=unit?`Value (${unit})`:"Value";
+  ctx.save();
+  const yLabelX=lead==="right"?canvas.width-14:15;
+  ctx.translate(yLabelX,(top+base)/2);
+  ctx.rotate(lead==="right"?Math.PI/2:-Math.PI/2);
+  drawText(yLabel,0,0,"center",.9);
+  ctx.restore();
+
+  drawText(`System time · ${lead==="right"?"newest →":"← newest"}`,(plotLeft+plotRight)/2,canvas.height-5,"center",.9);
+  drawLegend(series);
+  drawText(`max |value| = ${maxAbs.toFixed(2)}`,lead==="right"?plotRight-8:plotRight,20,"right",.8);
+
+  $("scopeTitle").textContent="LIVE POLL EQUALIZER";
+  $("scopeMeta").textContent=`${series.length} series · ${n} time slots · newest group enters at ${lead} · source changes ${changedCount}`;
+}
+
+function popOutGraph(){
+  if(graphPopup && !graphPopup.closed){
+    try{graphPopup.focus()}catch(e){}
+    return;
+  }
+
+  const popup=window.open("","tgdsDataScopeGraph","popup=yes,width=1400,height=900,resizable=yes,scrollbars=no");
+  if(!popup){
+    setState("Pop-out blocked by browser","bad");
+    return;
+  }
+
+  graphPopup=popup;
+  popup.document.open();
+  popup.document.write(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TGDS Data Scope ${APP_VERSION} - Graph</title>
+<style>
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#030607}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#dbe7f3}
+#wrap{position:fixed;inset:0;display:grid;grid-template-rows:minmax(0,1fr) auto;background:#030607}
+#graphWrap{min-height:0;position:relative}
+#popupScope{display:block;width:100%;height:100%;background:#030607}
+#popupStats{max-height:28vh;border-top:1px solid #244436;background:rgba(5,12,9,.96);overflow:hidden}
+#popupStatsTitle{padding:8px 12px;color:#9fd8bb;font-size:12px;font-weight:700;border-bottom:1px solid #153527}
+#popupStatsWrap{max-height:22vh;overflow:auto}
+#popupStats table{width:100%;border-collapse:collapse;font-family:ui-monospace,Consolas,monospace;font-size:11px}
+#popupStats th,#popupStats td{padding:6px 8px;border-bottom:1px solid rgba(71,120,91,.18);text-align:right;white-space:nowrap}
+#popupStats th:first-child,#popupStats td:first-child{text-align:left}
+#popupStats th{color:#6fa184;background:rgba(0,0,0,.16);position:sticky;top:0}
+#popupStats td{color:#b7d7c4}
+#popupClose{position:fixed;z-index:10;right:14px;top:12px;min-height:34px;padding:6px 11px;border:1px solid #3e5367;background:rgba(17,24,32,.92);color:#dbe7f3;border-radius:8px;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+#popupClose:hover{border-color:#6b879e}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="graphWrap"><canvas id="popupScope"></canvas></div>
+  <div id="popupStats">
+    <div id="popupStatsTitle">Live Statistics</div>
+    <div id="popupStatsWrap">
+      <table>
+        <thead><tr><th>Series</th><th>Current</th><th>Min</th><th>Max</th><th>Avg</th><th>Δ</th><th>Rate/sec</th></tr></thead>
+        <tbody id="popupStatsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<button id="popupClose" type="button">Close Pop-Out</button>
+</body>
+</html>`);
+  popup.document.close();
+
+  popupCanvas=popup.document.getElementById("popupScope");
+  popupCtx=popupCanvas.getContext("2d");
+
+  const resizePopup=()=>{
+    if(!graphPopup || graphPopup.closed || !popupCanvas)return;
+    const dpr=Math.max(1,Math.min(2,graphPopup.devicePixelRatio||1));
+    const graphWrap=popup.document.getElementById("graphWrap");
+    const r=graphWrap.getBoundingClientRect();
+    popupCanvas.width=Math.max(400,Math.round(r.width*dpr));
+    popupCanvas.height=Math.max(260,Math.round(r.height*dpr));
+    updateStats();
+    mirrorToPopup();
+  };
+
+  popup.document.getElementById("popupClose").addEventListener("click",()=>{
+    try{popup.close()}catch(e){}
+  });
+  popup.addEventListener("resize",resizePopup);
+  popup.addEventListener("beforeunload",()=>{
+    graphPopup=null;
+    popupCanvas=null;
+    popupCtx=null;
+    $("popoutBtn").textContent="Pop Out Graph";
+  });
+
+  $("popoutBtn").textContent="Focus Pop-Out";
+  updateStats();
+  resizePopup();
+  try{popup.focus()}catch(e){}
+}
+
+function mirrorToPopup(){
+  if(!graphPopup || graphPopup.closed || !popupCanvas || !popupCtx)return;
+  try{
+    const pw=popupCanvas.width,ph=popupCanvas.height;
+    popupCtx.clearRect(0,0,pw,ph);
+    popupCtx.fillStyle="#030607";
+    popupCtx.fillRect(0,0,pw,ph);
+
+    const scale=Math.min(pw/canvas.width,ph/canvas.height);
+    const dw=canvas.width*scale,dh=canvas.height*scale;
+    const dx=(pw-dw)/2,dy=(ph-dh)/2;
+    popupCtx.drawImage(canvas,0,0,canvas.width,canvas.height,dx,dy,dw,dh);
+  }catch(e){
+    console.warn("Pop-out mirror draw failed:",e);
+  }
+}
+
+function closeGraphPopup(){
+  if(graphPopup && !graphPopup.closed){
+    try{graphPopup.close()}catch(e){}
+  }
+  graphPopup=null;
+  popupCanvas=null;
+  popupCtx=null;
+  $("popoutBtn").textContent="Pop Out Graph";
+}
+
+function render(){
+  updateStats();
+  if(displayPaused && pausedFrame){drawPausedFrame();return;}
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const g=ctx.createRadialGradient(canvas.width/2,canvas.height/2,0,canvas.width/2,canvas.height/2,Math.max(canvas.width,canvas.height)*.72);g.addColorStop(0,"rgba(20,80,50,.015)");g.addColorStop(1,"rgba(0,0,0,.34)");ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(!dataRows.length||!getSelectedSeries().length){
+    mirrorToPopup();
+    return;
+  }
+  const mode=$("mode").value;if(mode==="scatter")renderScatter();else if(mode==="equalizer")renderEqualizer();else renderLine();
+  mirrorToPopup();
+}
+
+["mode","leadingEdge","maxPoints","bars"].forEach(id=>$(id).addEventListener("change",()=>{peakHold=[];render()}));
+$("openBtn").addEventListener("click",openFile);
+$("startBtn").addEventListener("click",startMonitoring);
+$("stopBtn").addEventListener("click",()=>stopMonitoring(true));
+$("readBtn").addEventListener("click",()=>readFile(true));
+$("popoutBtn").addEventListener("click",popOutGraph);
+
+$("pauseBtn").addEventListener("click",()=>setDisplayPaused(!displayPaused));
+$("fullscreenBtn").addEventListener("click",toggleFullscreen);
+
+canvas.classList.add("crosshair");
+canvas.addEventListener("mousemove",e=>{
+  const r=canvas.getBoundingClientRect();
+  hoverPoint={x:e.clientX-r.left,y:e.clientY-r.top};
+  if(!displayPaused)render();
+});
+canvas.addEventListener("mouseleave",()=>{
+  hoverPoint=null;
+  if(!displayPaused)render();
+});
+document.addEventListener("fullscreenchange",()=>{
+  $("fullscreenBtn").textContent=document.fullscreenElement?"Exit Full Screen":"Full Screen";
+  setTimeout(()=>render(),50);
+});
+
+$("helpBtn").addEventListener("click",()=>{
+  $("helpModal").classList.add("open");
+  $("helpModal").setAttribute("aria-hidden","false");
+});
+$("helpCloseBtn").addEventListener("click",()=>{
+  $("helpModal").classList.remove("open");
+  $("helpModal").setAttribute("aria-hidden","true");
+});
+$("helpModal").addEventListener("click",e=>{
+  if(e.target===$("helpModal"))$("helpCloseBtn").click();
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && $("helpModal").classList.contains("open"))$("helpCloseBtn").click();
+});
+document.addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="o"){e.preventDefault();openFile()}});
+document.title=`TGDS Data Scope ${APP_VERSION} — The Greco Data Scope`;
+$("headerVersion").textContent=APP_VERSION;
+$("footerVersion").textContent=APP_VERSION;
+$("copyrightYear").textContent=String(new Date().getFullYear());
+fitCanvas();
+$("contextMode").textContent=(window.isSecureContext&&("showOpenFilePicker" in window))?"File handle / live monitoring capable":"Snapshot fallback only";
+setState("Idle","");
+window.addEventListener("beforeunload",closeGraphPopup);
+console.log(`TGDS Data Scope ${APP_VERSION} ready`);
+console.log("Secure context:",window.isSecureContext,"File System Access:",("showOpenFilePicker" in window));
+</script>
+</body>
+</html>

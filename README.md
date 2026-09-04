@@ -283,7 +283,7 @@ No TGDS application server is required for the normal local workflow.
 
 ---
 
-## Live Feed Test Harness
+## Live Feed Test Harness and Data Collection
 
 The repository can optionally include:
 
@@ -291,7 +291,7 @@ The repository can optionally include:
 tgds-live-feed.bat
 ```
 
-This Windows test harness generates a simple four-column CSV and appends a new row once per second.
+The included Windows BAT file is a simple **test harness** for TGDS. It generates a four-column CSV and appends a new row once per second, making it easy to simulate a continuously changing external data source.
 
 Example output:
 
@@ -302,9 +302,58 @@ signal_1,signal_2,signal_3,signal_4
 63.42,66.42,82.08,49.72
 ```
 
-It provides an easy way to see TGDS operating against a continuously changing file.
+A typical simulation looks like:
 
-The BAT file is only a sample/test utility. TGDS itself does not depend on it.
+```text
+tgds-live-feed.bat
+        │
+        ▼
+ tgds-live-data.csv
+        │
+        ▼
+ TGDS Data Scope
+```
+
+The harness demonstrates an important part of the TGDS design: **TGDS does not need to know where the data came from.** It only needs a CSV file that another process can create or update.
+
+The included BAT file generates simulated values, but the same pattern can be adapted into a lightweight **data-collection harness**. Instead of generating test signals, a script or program could periodically gather values from external sources and write the latest observations to CSV for TGDS to monitor.
+
+Potential sources include:
+
+- Command-line utilities
+- PowerShell scripts
+- Local programs or services
+- Instrument or device output
+- Log-processing scripts
+- Database queries
+- REST APIs or other network services
+- Operating-system or machine statistics
+- Scheduled jobs and integration processes
+
+Conceptually:
+
+```text
+External Data Sources
+   │
+   ├──► Device / Instrument
+   ├──► REST API
+   ├──► Database Query
+   ├──► System Metrics
+   └──► Other Program
+             │
+             ▼
+      Collection Harness
+             │
+             ▼
+          data.csv
+             │
+             ▼
+      TGDS Data Scope
+```
+
+This keeps TGDS deliberately decoupled from data acquisition. The producer can be a BAT file, PowerShell script, Python program, compiled application, scheduled process, or anything else capable of maintaining a CSV file.
+
+`tgds-live-feed.bat` is therefore both a ready-to-run simulation and a small reference implementation of the **producer → CSV → TGDS** pattern. TGDS itself does not depend on the BAT file.
 
 ---
 
@@ -317,7 +366,7 @@ tgds-scope/
 │
 ├── index.html              # GitHub Pages launcher
 ├── tgds-data-scope.html    # Standalone TGDS application
-├── tgds-live-feed.bat      # Optional Windows live-feed test harness
+├── tgds-live-feed.bat      # Simulation / data-producer test harness
 ├── .gitignore
 ├── README.md
 ├── CHANGELOG.md

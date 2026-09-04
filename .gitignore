@@ -1,0 +1,52 @@
+# ============================================================
+# TGDS Data Scope - .gitignore
+# ============================================================
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log
+
+# TGDS development / scratch files
+_tgds_*_check.js
+*_check.js
+scratch/
+temp/
+tmp/
+
+# Development/test dependencies only.
+# TGDS Data Scope itself has zero third-party runtime dependencies.
+node_modules/
+
+# Automated test output
+test-results/
+playwright-report/
+coverage/
+
+# Local environment files / secrets
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets/
+
+# Generated archives
+*.zip
+*.tar
+*.tar.gz
+
+# Keep public sample CSV/JSON fixtures and repo artifacts in source control.
