@@ -8,6 +8,8 @@ TGDS Data Scope opens a user-selected CSV file and repeatedly reads its latest v
 
 > **Open a CSV. Watch the data live.**
 
+![TGDS Data Scope screenshot](screenshot.jpeg)
+
 ## Run TGDS Data Scope
 
 **[▶ Run TGDS Data Scope in your browser](https://mikejamesgreco.github.io/tgds-scope/)**
